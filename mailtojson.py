@@ -104,13 +104,13 @@ class MailJson:
                 if h_encoding is None:
                     h_encoding = "utf-8"
                 elif h_encoding == "iso-8859-1":
-                    hv = hv.decode('utf-8', errors='replace')
+                    hv = hv.decode("utf-8", errors="replace")
                     h_encoding = "utf-8"
                 elif h_encoding == "unknown-8bit":
-                    hv = hv.decode('utf-8', errors='replace')
+                    hv = hv.decode("utf-8", errors="replace")
                     h_encoding = "utf-8"
                 else:
-                    hv = hv.decode('utf-8', errors='replace')
+                    hv = hv.decode("utf-8", errors="replace")
                     h_encoding = h_encoding.lower()
                 hv = str(hv.encode(self.encoding), h_encoding).strip().strip("\t")
 
