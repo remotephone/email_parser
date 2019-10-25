@@ -102,10 +102,16 @@ class MailJson:
                 hv = h_decoded[0]
                 h_encoding = h_decoded[1]
                 if h_encoding is None:
-                    h_encoding = "ascii"
+                    h_encoding = "utf-8"
+                elif h_encoding == "iso-8859-1":
+                    hv = hv.decode('utf-8', errors='replace')
+                    h_encoding = "utf-8"
+                elif h_encoding == "unknown-8bit":
+                    hv = hv.decode('utf-8', errors='replace')
+                    h_encoding = "utf-8"
                 else:
+                    hv = hv.decode('utf-8', errors='replace')
                     h_encoding = h_encoding.lower()
-
                 hv = str(hv.encode(self.encoding), h_encoding).strip().strip("\t")
 
                 h_ret.append(hv.encode(self.encoding))

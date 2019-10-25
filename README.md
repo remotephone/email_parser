@@ -14,7 +14,6 @@ Currently outputs into `./output` in the working directory and names files follo
 
 ToDo:
 - Add proper logging
-- Test on a lot more samples to find bugs
+- Test on a lot more samples to find bugs (done, used [this](https://github.com/mikel/mail/tree/master/spec/fixtures) does not handle non-ascii filenames??)
 - Check hash values against virustotal
-- Extract urls from body of the email
-- ????
+- Extract urls from body of the email (done)

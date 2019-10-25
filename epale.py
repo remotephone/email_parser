@@ -68,6 +68,7 @@ def main():
     outputdir.mkdir(parents=True, exist_ok=True)
 
     for message in messages:
+        print(message)
         mail = MailAnalyzer(message)
         mail.handle_attachments()
         mail.extract_urls()
