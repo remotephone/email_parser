@@ -1,23 +1,28 @@
-from mailtojson import MailJson
-from pathlib import Path
+import argparse
 import base64
 import hashlib
-import argparse
+import re
+from pathlib import Path
+
+from mailtojson import MailJson
 
 
 class MailAnalyzer:
-    def __init__(self, mailpath):
+    def __init__(self, message, outputdir=None):
 
-        self.outputdir = Path("./output")
+        if outputdir == None:
+            self.outputdir = Path("./output")
+        else:
+            self.outputdir = outputdir
+
         self.outputdir.mkdir(parents=True, exist_ok=True)
-        self.mailpath = mailpath
-        self.maildir = Path(mailpath)
+        self.message = open(message, "r").read()
+        self.mj = MailJson(self.message)
+        self.mj.parse()
+        self.data = self.mj.get_data()
 
-    def parse_and_save(self, content):
-        mj = MailJson(content)
-        mj.parse()
-        data = mj.get_data()
-        for k in data["attachments"]:
+    def handle_attachments(self):
+        for k in self.data["attachments"]:
             outputfile = (
                 k["filename"]
                 + "_"
@@ -27,18 +32,45 @@ class MailAnalyzer:
             with open(path, "wb") as f:
                 f.write(base64.decodebytes(k["content"]))
 
-    def process_folder(self):
-        for message in self.maildir.rglob("*.eml"):
-            content = open(message, "r").read()
-            self.parse_and_save(content)
+    def extract_urls(self):
+        for k in self.data["parts"]:
+            urls = re.findall('"((http|ftp|file)s?://.*?)"', k["content"])
+            for url in urls:
+                print(url)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", help="directory emails are stored in", required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-d", "--dir", help="directory emails are stored in")
+    group.add_argument("-m", "--msg", help="single original.msg or eml file to parse")
+    parser.add_argument(
+        "-u",
+        "--url",
+        help="parse and extract URLs from message body",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-a", "--attch", help="parse and extract attachments", action="store_true"
+    )
+    parser.add_argument("-o", "--out", help="output directory", default="./output")
     args = parser.parse_args()
-    mail = MailAnalyzer(args.d)
-    mail.process_folder()
+
+    messages = []
+    if args.dir:
+        maildir = Path(args.dir)
+        for message in maildir.rglob("*.eml"):
+            messages.append(message)
+    elif args.msg:
+        messages.append(Path(args.msg))
+
+    outputdir = Path(args.out)
+    outputdir.mkdir(parents=True, exist_ok=True)
+
+    for message in messages:
+        mail = MailAnalyzer(message)
+        mail.handle_attachments()
+        mail.extract_urls()
 
 
 if __name__ == "__main__":
